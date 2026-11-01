@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="km">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>វិញ្ញាសាអនុវត្តការវិភាគទឹកនោម (Urinalysis Case Simulation) - ថ្នាក់ BSL ឆ្នាំទី១</title>
+<link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b1120;
+  --card: #15203b;
+  --card-border: #1e293b;
+  --primary: #38bdf8;
+  --primary-hover: #0284c7;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --accent: #f59e0b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Kantumruy Pro', 'Inter', system-ui, sans-serif; }
+body { background: var(--bg); color: var(--text); min-height: 100vh; padding: 16px; display: flex; flex-direction: column; align-items: center; }
+.wrap { width: 100%; max-width: 840px; margin: 0 auto; }
+header.hero { text-align: center; margin-bottom: 20px; }
+.hero h1 { font-size: 1.30rem; color: var(--primary); margin-bottom: 6px; line-height: 1.45; }
+.hero p { color: var(--text-muted); font-size: 0.88rem; }
+.card { background: var(--card); border: 1px solid var(--card-border); border-radius: 14px; padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.status-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--card-border); font-size: 0.88rem; }
+.badge { background: #0369a1; color: #bae6fd; padding: 4px 10px; border-radius: 9999px; font-weight: 600; font-size: 0.75rem; }
+.timer-box { font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 6px; font-size: 1.05rem; }
+.timer-box.urgent { color: var(--danger); }
+.question-title { font-size: 1.05rem; line-height: 1.6; font-weight: 600; margin-bottom: 14px; color: var(--text); }
+.diagram-box { display: flex; justify-content: center; align-items: center; background: #080e1e; border: 1px solid #1e3a8a; border-radius: 10px; padding: 14px; margin-bottom: 16px; }
+.options-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.option-btn { background: #0b1120; border: 1px solid var(--card-border); color: var(--text); padding: 14px 16px; border-radius: 10px; text-align: left; font-size: 0.94rem; cursor: pointer; transition: all 0.15s ease; line-height: 1.5; display: flex; align-items: flex-start; gap: 10px; }
+.option-btn:hover:not(:disabled) { border-color: var(--primary); background: #1a253c; }
+.option-btn:disabled { cursor: default; }
+.option-btn.correct { background: rgba(34, 197, 94, 0.22) !important; border-color: var(--success) !important; color: #86efac; font-weight: 600; }
+.option-btn.wrong { background: rgba(239, 68, 68, 0.22) !important; border-color: var(--danger) !important; color: #fca5a5; }
+.letter { font-weight: 700; color: var(--primary); font-size: 1.05rem; min-width: 25px; }
+.hint-section { margin-bottom: 16px; }
+.hint-btn { background: none; border: none; color: var(--accent); font-size: 0.88rem; cursor: pointer; text-decoration: underline; padding: 0; }
+.hint-content { display: none; margin-top: 8px; background: rgba(245, 158, 11, 0.12); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 4px; font-size: 0.88rem; color: #fde68a; line-height: 1.5; }
+.feedback-box { display: none; background: #0d1a33; border: 1px solid #2563eb; border-radius: 10px; padding: 16px; margin-bottom: 16px; line-height: 1.5; font-size: 0.9rem; }
+.feedback-box h4 { margin-bottom: 8px; color: #93c5fd; font-size: 0.95rem; }
+.controls { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.action-btn { background: var(--primary); color: #090d16; border: none; padding: 10px 22px; border-radius: 8px; font-weight: 700; font-size: 0.92rem; cursor: pointer; transition: background 0.15s; }
+.action-btn:hover { background: var(--primary-hover); }
+.action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.progress-wrap { margin-top: 20px; }
+.progress-bar-bg { background: #1e293b; height: 8px; border-radius: 9999px; overflow: hidden; }
+.progress-bar-fill { background: var(--primary); height: 100%; width: 3.33%; transition: width 0.3s; }
+.final-screen { display: none; text-align: center; padding: 36px 12px; }
+.final-score { font-size: 3rem; font-weight: 800; color: var(--primary); margin: 16px 0; }
+.review-list { margin-top: 20px; text-align: left; }
+.review-item { border: 1px solid var(--card-border); border-radius: 8px; padding: 12px; margin-bottom: 10px; background: #0b1120; font-size: 0.88rem; }
+.review-item summary { cursor: pointer; font-weight: 700; color: var(--primary); }
+.review-item p { margin-top: 6px; color: #cbd5e1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <h1>វិញ្ញាសាអនុវត្តការវិភាគទឹកនោម៖ រូបសាស្ត្រ សរីរវិទ្យា & មន្ទីរពិសោធន៍ (Urinalysis & Renal Physiology)</h1>
+    <p>ផ្អែកលើស្លាយមេរៀនវេជ្ជបណ្ឌិត Dr. Meun Lida (UHS) • ៣០ សំណួរគ្លីនិក & មន្ទីរពិសោធន៍ • ចៃដន្យ (Shuffle) • ៦០ វិនាទី</p>
+  </header>
+
+  <div class="card" id="quizCard">
+    <div class="status-bar">
+      <span class="badge" id="topicBadge">មេរៀន</span>
+      <span id="qCount" style="font-weight:600;">សំណួរទី 1 នៃ 30</span>
+      <div class="timer-box" id="timerBox">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span id="timerText">60s</span>
+      </div>
+    </div>
+
+    <div id="diagramContainer" class="diagram-box"></div>
+
+    <div class="question-title" id="questionTitle"></div>
+
+    <div class="hint-section">
+      <button class="hint-btn" id="hintToggleBtn" onclick="toggleHint()">💡 បង្ហាញតម្រុយគ្លីនិក (Show Hint)</button>
+      <div class="hint-content" id="hintContent"></div>
+    </div>
+
+    <div class="options-grid" id="optionsGrid"></div>
+
+    <div class="feedback-box" id="feedbackBox">
+      <h4>ការពន្យល់លម្អិតក្នុងមន្ទីរពិសោធន៍ (Lab Rationale):</h4>
+      <div id="feedbackText"></div>
+    </div>
+
+    <div class="controls">
+      <span style="font-size:0.88rem; color:var(--text-muted);" id="liveScore">ពិន្ទុ: 0 / 0</span>
+      <button class="action-btn" id="nextBtn" onclick="nextQuestion()" disabled>សំណួរបន្ទាប់ →</button>
+    </div>
+  </div>
+
+  <div class="card final-screen" id="finalCard">
+    <h2>បញ្ចប់ការធ្វើតេស្ត!</h2>
+    <p style="margin-top:8px; color:var(--text-muted);">អ្នកបានឆ្លងកាត់ការអនុវត្តវិញ្ញាសាការវិភាគទឹកនោម ៣០ សំណួររួចរាល់ហើយ។</p>
+    <div class="final-score" id="finalScoreVal">0%</div>
+    <p id="finalFeedback" style="margin-bottom: 24px; color: #cbd5e1; font-size:1.02rem; line-height:1.6;"></p>
+    <button class="action-btn" onclick="initQuiz()">ធ្វើវិញ្ញាសាសាឡើងវិញ (Shuffle ថ្មី)</button>
+    <div class="review-list" id="reviewContainer"></div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressBar"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const rawQuestions = [
+  {
+    topic: "Urine Collection — Indwelling Catheter Port Sampling [Evaluate]",
+    title: "អ្នកជំងឺម្នាក់មានដាក់សុងទឹកនោម (Indwelling Foley Catheter)។ គិលានុបដ្ឋាយិកាបានបើកក្បាលរ៉ូប៊ីណេខាងក្រោមនៃថង់ស្តុកទឹកនោម (Urobag) ច្រោះយកទឹកនោម 50 mL ផ្ញើមកមន្ទីរពិសោធន៍ដើម្បីធ្វើ Urine Culture។ តើអ្នកបច្ចេកទេសគួរវាយតម្លៃសំណាកនេះដូចម្តេច?",
+    hint: "ត្រូវបដិសេធសំណាក! ទឹកនោមក្នុងថង់ Urobag ទុកយូរមានមេរោគកកកុញ; ត្រូវបូមផ្ទាល់ពី Luer-Lok sampling port។",
+    svg: `<svg width="220" height="85" viewBox="0 0 220 85"><rect x="30" y="32" width="70" height="18" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/><circle cx="85" cy="41" r="5" fill="#f59e0b"/><text x="85" y="22" fill="#22c55e" font-size="8" text-anchor="middle">✓ Needleless Port</text><path d="M 100,41 L 140,41 L 140,65" stroke="#94a3b8" stroke-width="2"/><rect x="125" y="45" width="30" height="30" rx="3" fill="#334155" stroke="#ef4444" stroke-width="1.5"/><text x="140" y="63" fill="#ef4444" font-size="8" text-anchor="middle">✗ Urobag</text></svg>`,
+    options: [
+      { text: "បដិសេធសំណាក ព្រោះទឹកនោមក្នុងថង់ Urobag ស្តុកយូរមានមេរោគរីកសាយ; ត្រូវបូមផ្ទាល់ពី sampling port នៃទុយោ", isCorrect: true },
+      { text: "ទទួលយកសំណាក ព្រោះទឹកនោមក្នុងថង់ Urobag ឆ្លុះបញ្ចាំងពីបរិមាណមេរោគសរុបក្នុងប្លោកនោមបានល្អបំផុត", isCorrect: false },
+      { text: "យកទឹកនោមនោះទៅដាំឱ្យពុះសម្លាប់មេរោគខាងក្រៅសិន ទើបយកទៅបណ្តុះលើបន្ទះ Agar", isCorrect: false },
+      { text: "បន្ថែមសារធាតុ Formalin ចូលក្នុងថង់ Urobag មុននឹងច្រោះយកមកធ្វើតេស្តបាក់តេរី", isCorrect: false }
+    ],
+    rationale: "យោងតាមស្លាយមេរៀន Lesson 2 (ការណែនាំចំពោះអ្នកជំងឺ ស្លាយ ១៥-១៦)៖ ករណីអ្នកជំងឺមានជាប់សុងទឹកនោម (dwelling catheter) ត្រូវយកសំណាកដោយផ្ទាល់ពីទុយោរបស់សុងតាមរយៈ Luer-Lok sampling port ដោយប្រើសឺរ៉ាំងគ្មានម្ជុលស្អាត មិនត្រូវយកពីថង់ទឹកនោមឡើយ (not from the urobag) ព្រោះទឹកនោមក្នុងថង់ជាទឹកនោមចាស់ មានបាក់តេរីកកកុញ និងបំបែកសារធាតុ បង្កជាលទ្ធផលវិជ្ជមានក្លែងក្លាយ។"
+  },
+  {
+    topic: "Specimen Preservation — Unpreserved Delayed Analysis [Analyze]",
+    title: "សំណាកទឹកនោមធម្មតាមួយត្រូវបានទុកចោលនៅសីតុណ្ហភាពបន្ទប់លើសពី ៤ ម៉ោងដោយមិនបានដាក់ទូទឹកកក។ លើការពិនិត្យគីមី និងមីក្រូទស្សន៍ តើការប្រែប្រួលមិនប្រក្រតីណាខ្លះដែលនឹងកើតឡើង?",
+    hint: "បាក់តេរីបំបែក Urea ទៅជា Ammonia ធ្វើឱ្យ pH ឡើងបាស -> កោសិកា RBC/WBC និង Casts រលាយបាត់បង់។",
+    options: [
+      { text: "បាក់តេរីកើនឡើងបំប្លែង Urea ជា Ammonia ធ្វើឱ្យ pH កើនឡើង (បាស) បណ្តាលឱ្យ RBCs, WBCs និង Casts រលាយបាត់", isCorrect: true },
+      { text: "កម្រិតជាតិស្ករ Glucose កើនឡើងទ្វេដង ហើយកោសិកាឈាមក្រហមរីកមាឌធំមិនព្រមបែក", isCorrect: false },
+      { text: "កម្រិត Bilirubin និង Urobilinogen កើនឡើងខ្ពស់ខ្លាំងដោយសារពន្លឺថ្ងៃក្នុងបន្ទប់", isCorrect: false },
+      { text: "ទឹកនោមប្រែជាមានជាតិអាស៊ីតខ្លាំង (pH < 4.5) ធ្វើឱ្យគ្រីស្តាល់ទាំងអស់រលាយអស់", isCorrect: false }
+    ],
+    rationale: "ស្លាយមេរៀន Lesson 2 ចែងថា៖ ទឹកនោមទុកចោលយូរនៅសីតុណ្ហភាពបន្ទប់ (>2 ម៉ោង) បាក់តេរីនឹងកើនឡើងបំប្លែង Urea ទៅជា Ammonia ធ្វើឱ្យ pH ប្រែជាបាស (Alkaline)។ pH បាសរួមជាមួយកំហាប់ dilute ធ្វើឱ្យកោសិកាឈាមក្រហម (RBCs), ឈាមស (WBCs) និង Casts រលាយបាត់ (Lysis) ព្រមទាំងធ្វើឱ្យបាត់បង់ Glucose (បាក់តេរីស៊ី) និងបាត់បង់ Bilirubin (រងការកត់ស៊ីតកម្មដោយពន្លឺ)។"
+  },
+  {
+    topic: "Urine Physical Exam — Foam Differentiation [Analyze]",
+    title: "ពេលក្រឡុកកំប៉ុងសំណាកទឹកនោម អ្នកបច្ចេកទេសសង្កេតឃើញមានពពុះក្រាស់ឡើងពណ៌លឿងចាស់ ឬពណ៌ទឹកក្រូច (Yellow/Orange foam)។ តើវត្តមាននៃសារធាតុមិនប្រក្រតីមួយណាដែលបង្កឱ្យមានពពុះពណ៌នេះ?",
+    hint: "ពពុះពណ៌សជាប់យូរ = Proteinuria; ពពុះពណ៌លឿង/ទឹកក្រូច = Bilirubin (ជំងឺថ្លើម/ស្ទះប្រមាត់)។",
+    svg: `<svg width="220" height="85" viewBox="0 0 220 85"><rect x="40" y="20" width="45" height="50" rx="3" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/><ellipse cx="62.5" cy="24" rx="18" ry="6" fill="#f8fafc"/><text x="62.5" y="78" fill="#f8fafc" font-size="7.5" text-anchor="middle">White Foam (Albumin)</text><rect x="135" y="20" width="45" height="50" rx="3" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/><ellipse cx="157.5" cy="24" rx="18" ry="6" fill="#f59e0b"/><text x="157.5" y="78" fill="#f59e0b" font-size="7.5" text-anchor="middle">Yellow Foam (Bilirubin)</text></svg>`,
+    options: [
+      { text: "Bilirubin ឬ Bile pigments (សញ្ញានៃជំងឺថ្លើម រលាកថ្លើម ឬការស្ទះផ្លូវទឹកប្រមាត់)", isCorrect: true },
+      { text: "Albumin ក្នុងបរិមាណច្រើនលើសលប់ដោយសារជំងឺខ្សោយតម្រងនោម", isCorrect: false },
+      { text: "ជាតិស្ករគ្លុយកូស (Glucose) ក្នុងជំងឺទឹកនោមផ្អែមធ្ងន់ធ្ងរ", isCorrect: false },
+      { text: "សារធាតុ Myoglobin បញ្ចេញពីសាច់ដុំដែលរងការរលួយបែកបាក់", isCorrect: false }
+    ],
+    rationale: "យោងតាមស្លាយមេរៀន Lesson 3 (Foam ពពុះទឹកនោម)៖ ពពុះពណ៌សកកស្ទះយូរមិនងាយបាត់ បង្ហាញពីវត្តមាន Proteinuria ខ្ពស់។ ចំណែកពពុះដែលមានពណ៌លឿងចាស់ ឬពណ៌ទឹកក្រូច (Yellow/Orange foam) បង្ហាញពីវត្តមាន Bilirubin / Bile salts ដែលជាសញ្ញានៃជំងឺថ្លើម (Hepatitis) ឬការស្ទះផ្លូវទឹកប្រមាត់ (Obstructive jaundice)។"
+  },
+  {
+    topic: "Renal Physiology — Glomerular Filtration Barrier [Analyze]",
+    title: "នៅក្នុងតម្រងនោមធម្មតា ហេតុអ្វីបានជាម៉ូលេគុលប្រូតេអ៊ីន Albumin មិនអាចឆ្លងកាត់តម្រង Glomerulus ចូលទៅក្នុងទឹកនោមបឋម (Glomerular filtrate) បាន?",
+    hint: "Albumin មានទម្ងន់ធំ (~68 kDa) និងមានបន្ទុកអគ្គិសនីអវិជ្ជមាន ដែលត្រូវច្រានចេញដោយជញ្ជាំង Basement membrane។",
+    options: [
+      { text: "ដោយសារទំហំម៉ូលេគុលធំ និងបន្ទុកអវិជ្ជមាននៃជញ្ជាំង Glomerular basement membrane ច្រាន Albumin មិនឱ្យឆ្លងកាត់", isCorrect: true },
+      { text: "ដោយសារ Albumin ត្រូវបានបំប្លែងទៅជាអ៊ុយរ៉េភ្លាមៗនៅពេលចូលដល់សរសៃឈាម Afferent arteriole", isCorrect: false },
+      { text: "ដោយសារបំពង់ Bowman's capsule មានផ្ទុកជាតិអាស៊ីតខ្លាំងរំលាយប្រូតេអ៊ីនចោល", isCorrect: false },
+      { text: "ដោយសារកោសិកា Podocytes លេបត្របាក់ Albumin យកទៅស្តុកទុកក្នុងថ្លើម", isCorrect: false }
+    ],
+    rationale: "យោងតាមស្លាយមេរៀន Lesson 1 (Nephron & Glomerular filtration)៖ តម្រង Glomerular filtration barrier បង្កើតឡើងដោយ Endothelial fenestrations, Glomerular Basement Membrane (GBM), និង Podocyte slit diaphragms។ ទាំង GBM និង Podocytes សំបូរទៅដោយ Negatively charged proteoglycans ដែលច្រានម៉ូលេគុល Albumin (បន្ទុកអវិជ្ជមានដូចគ្នា) មិនឱ្យធ្លាយចូលទឹកនោមបានឡើយ។"
+  },
+  {
+    topic: "Hormonal Regulation — ADH Deficiency vs SIADH [Evaluate]",
+    title: "អ្នកជំងឺម្នាក់នោមច្រើនខុសធម្មតា (Urine output = 6 L/day) ពិនិត្យឃើញ Specific Gravity = 1.002 (ទាបខ្លាំង)។ ក្រោយចាក់អ័រម៉ូន ADH (Vasopressin) បរិមាណទឹកនោមធ្លាក់ចុះមកធម្មតាវិញ ហើយ SG ឡើងដល់ 1.018។ តើអ្នកជំងឺនេះមានជំងឺអ្វី?",
+    hint: "កង្វះអរម៉ូន ADH ធ្វើឱ្យបំពង់ទុបុយឡាមិនអាចស្រូបទឹកចូលវិញ បង្កជា Diabetes Insipidus (ជំងឺទឹកនោមសាប)។",
+    options: [
+      { text: "Diabetes Insipidus (ជំងឺទឹកនោមសាប បណ្តាលមកពីកង្វះអរម៉ូន ADH ពី Hypothalamus)", isCorrect: true },
+      { text: "Diabetes Mellitus (ជំងឺទឹកនោមផ្អែម បណ្តាលមកពីកង្វះអរម៉ូន Insulin ពីលំពែង)", isCorrect: false },
+      { text: "Syndrome of Inappropriate ADH (SIADH ដែលមានអរម៉ូន ADH លើសលប់)", isCorrect: false },
+      { text: "Acute Glomerulonephritis បណ្តាលមកពីការឆ្លងមេរោគបាក់តេរីតម្រងនោម", isCorrect: false }
+    ],
+    rationale: "ស្លាយមេរៀន Lesson 1 និង Lesson 3 ចែងថា៖ អរម៉ូន ADH (បញ្ចេញពី Hypothalamus) មាននាទីបង្កើនការស្រូបទឹកពី Collecting duct មកក្នុងឈាម។ កាលណាខ្វះ ADH (Central Diabetes Insipidus) បំពង់តម្រងនោមមិនអាចស្រូបយកទឹកត្រឡប់មកវិញបានឡើយ បង្កឱ្យនោមច្រើនលើសលប់ (Polyuria > 3L) ជាមួយទឹកនោមរាវខ្លាំង (Low SG < 1.005)។ ពេលចាក់ ADH ជំនួស ស្ថានភាពនេះនឹងវិលមកប្រក្រតីវិញ។"
+  },
+  {
+    topic: "Urine Volume — Oliguria vs Anuria Definitions [Evaluate]",
+    title: "អ្នកជំងឺសង្គ្រោះបន្ទាន់ម្នាក់មានការស្ទះផ្លូវទឹកនោមដោយសារគ្រួសតម្រងនោមទាំងសងខាង វាស់បរិមាណទឹកនោម ២៤ ម៉ោងសរុបឃើញត្រឹមតែ 60 mL។ តើស្ថានភាពនេះត្រូវបានកំណត់តាមវេជ្ជសាស្ត្រជាអ្វី?",
+    hint: "Anuria គឺបរិមាណទឹកនោមតិចជាង 100 mL/day; Oliguria គឺតិចជាង 500 mL/day។",
+    svg: `<svg width="220" height="85" viewBox="0 0 220 85"><rect x="30" y="15" width="45" height="55" rx="3" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/><rect x="30" y="65" width="45" height="5" fill="#ef4444"/><text x="52.5" y="42" fill="#ef4444" font-size="8" text-anchor="middle">&lt;100 mL</text><text x="52.5" y="80" fill="#f8fafc" font-size="7.5" text-anchor="middle">Anuria</text><rect x="140" y="15" width="45" height="55" rx="3" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/><rect x="140" y="50" width="45" height="20" fill="#f59e0b"/><text x="162.5" y="42" fill="#f59e0b" font-size="8" text-anchor="middle">&lt;500 mL</text><text x="162.5" y="80" fill="#f8fafc" font-size="7.5" text-anchor="middle">Oliguria</text></svg>`,
+    options: [
+      { text: "Anuria (បរិមាណទឹកនោមតិចជាង 100 mL ក្នុងមួយថ្ងៃ បញ្ជាក់ពីការខូចតម្រងនោមធ្ងន់ធ្ងរ ឬស្ទះផ្លូវនោមទាំងស្រុង)", isCorrect: true },
+      { text: "Oliguria (បរិមាណទឹកនោមចន្លោះពី 100 ទៅ 500 mL ក្នុងមួយថ្ងៃ)", isCorrect: false },
+      { text: "Polyuria (បរិមាណទឹកនោមលើសពី 3 លីត្រក្នុងមួយថ្ងៃ)", isCorrect: false },
+      { text: "Nocturia (ការក្រោកនោមញឹកញាប់លើសពី ៣ ដងនៅពេលយប់)", isCorrect: false }
+    ],
+    rationale: "យោងតាមស្លាយមេរៀន Lesson 3 (Urine Volume Terminology ស្លាយ ៣៣-៣៤)៖ Normal = 800-2000 mL/ថ្ងៃ; Polyuria = >3 L/ថ្ងៃ; Oliguria = <500 mL/ថ្ងៃ (ឬ <0.5 mL/kg/hr); និង Anuria = <100 mL/ថ្ងៃ (កម្រិតដែលតម្រងនោមឈប់ដំណើរការផលិត ឬមានការស្ទះផ្លូវទឹកនោមទាំងស្រុង complete obstruction)។ ទីនេះ 60 mL គឺជា Anuria។"
+  },
+  {
+    topic: "Urine Color — Hematuria vs Hemoglobinuria Differential [Analyze]",
+    title: "ទឹកនោមរបស់អ្នកជំងឺម្នាក់មានពណ៌ក្រហម (Red urine)។ ក្រោយពេលអ្នកបច្ចេកទេសយកទៅបង្វិល Centrifuge ឃើញថាកករខាងក្រោមជាពណ៌ក្រហមដិត រីឯទឹកប្លាស្មាខាងលើ (Supernatant) ប្រែជាថ្លាពណ៌លឿងធម្មតាវិញ។ តើនេះជាសញ្ញានៃអ្វី?",
+    hint: "បើបង្វិលទៅកករក្រហម ហើយទឹកខាងលើថ្លា = Hematuria (កោសិកា RBC នៅរស់); បើទឹកខាងលើនៅតែក្រហម = Hemoglobinuria។",
+    options: [
+      { text: "Hematuria (វត្តមានគ្រាប់ឈាមក្រហមនៅពេញលេញ Intact RBCs ដែលធ្លាក់កករពេលបង្វិល)", isCorrect: true },
+      { text: "Hemoglobinuria (វត្តមានអេម៉ូក្លូប៊ីនរលាយសេរីពីការបែកគ្រាប់ឈាមក្នុងសរសៃ)", isCorrect: false },
+      { text: "Myoglobinuria (វត្តមានប្រូតេអ៊ីនសាច់ដុំរលាយដោយសារការរលួយសាច់ដុំ)", isCorrect: false },
+      { text: "ពណ៌ក្រហមបណ្តាលមកពីការញ៉ាំផ្លែប័រ ឬបន្លែ Beetroot សុទ្ធសាធ", isCorrect: false }
+    ],
+    rationale: "យោងតាមស្លាយ Lesson 3៖ វិធីសាស្ត្រមន្ទីរពិសោធន៍ដើម្បីបែងចែកពណ៌ក្រហម៖ ក្នុង Hematuria ពណ៌ក្រហមបណ្តាលមកពីកោសិកាឈាមក្រហមនៅទាំងមូល (Intact RBCs) ដូច្នេះពេល Centrifuge គ្រាប់ឈាមនឹងធ្លាក់កករទៅបាត បន្សល់ Supernatant ថ្លាធម្មតា។ ផ្ទុយទៅវិញ ក្នុង Hemoglobinuria ឬ Myoglobinuria សារធាតុពណ៌ជារបស់រលាយ (Free pigment) ដូច្នេះក្រោយ Centrifuge ទឹកខាងលើនៅតែមានពណ៌ក្រហមដដែល។"
+  },
+  {
+    topic: "Non-pathologic Turbidity — Amorphous Urates Dissolution [Analyze]",
+    title: "សំណាកទឹកនោមដែលមានជាតិអាស៊ីត (Acidic urine) ក្រោយពេលក្លាសេក្នុងទូទឹកកក បង្កើតបានជាកករកករព្រិលពណ៌ផ្កាឈូកដូចម្សៅឥដ្ឋ (Pink 'brick dust' precipitate)។ តើអ្នកបច្ចេកទេសអាចរំលាយកករនេះដោយវិធីណា?",
+    hint: "Amorphous urates (ពណ៌ផ្កាឈូកក្នុង pH អាស៊ីត) រលាយបាត់ភ្លាមៗពេលយកទៅកម្តៅ (Gentle warming)។",
+    options: [
+      { text: "យកបំពង់ទឹកនោមទៅកម្តៅកម្តៅឧណ្ហៗ (Gentle heating) វានឹងរលាយបាត់ថ្លាវិញភ្លាម", isCorrect: true },
+      { text: "បន្ថែមអាស៊ីតអាសេទិក (Acetic acid) ចូលដើម្បីបញ្ចុះកម្រិត pH ឱ្យកាន់តែទាប", isCorrect: false },
+      { text: "យកទៅក្លាសេក្នុងទឹកកកសីតុណ្ហភាព -20°C រយៈពេល ២៤ ម៉ោងបន្ថែមទៀត", isCorrect: false },
+      { text: "ច្រោះតាមក្រដាស Filter paper ចោលព្រោះជាកាកសំណល់បាក់តេរីពុល", isCorrect: false }
+    ],
+    rationale: "យោងតាមស្លាយមេរៀន Lesson 3 (Non-pathologic Turbidity ស្លាយ ១៩)៖ Amorphous urates កើតឡើងក្នុងទឹកនោមអាស៊ីត (Acid pH) បង្កើតជាកករពណ៌ផ្កាឈូក/ត្នោត (Pink brick dust ដោយសារ uroerythrin) ពេលត្រូវត្រជាក់។ លក្ខណៈសម្គាល់គឺ 'ស្រួលបាត់ពេលកម្តៅសំណាក' (Soluble upon gentle heating)។ ផ្ទុយទៅវិញ Amorphous phosphates កើតក្នុងទឹកនោមបាស ហើយរលាយពេលបន្ថែមអាស៊ីត dilute acetic acid។"
+  },
+  {
+    topic: "Microscopic Casts — RBC Cast in Glomerulonephritis [Evaluate]",
+    title: "អ្នកជំងឺកុមារម្នាក់មានទឹកនោមពណ៌ដូចទឹកតែ (Tea-colored urine) និងហើមមុខ។ ពិនិត្យកករទឹកនោមក្រោមមីក្រូទស្សន៍ឃើញមាន Red Blood Cell Casts (RBC casts)។ តើវត្តមាននៃ RBC Casts បញ្ជាក់ពីទីតាំងដំបៅនៅត្រង់ណា?",
+    hint: "Casts កកើតក្នុង Tubules; វត្តមាន RBC cast បញ្ជាក់ថាការហូរឈាមកើតចេញពី Glomerulus (Glomerulonephritis) មិនមែនប្លោកនោមទេ។",
+    svg: `<svg width="220" height="85" viewBox="0 0 220 85"><rect x="35" y="28" width="150" height="30" rx="15" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/><circle cx="65" cy="43" r="6" fill="#ef4444"/><circle cx="85" cy="43" r="6" fill="#ef4444"/><circle cx="105" cy="43" r="6" fill="#ef4444"/><circle cx="125" cy="43" r="6" fill="#ef4444"/><circle cx="145" cy="43" r="6" fill="#ef4444"/><text x="110" y="20" fill="#f59e0b" font-size="8.5" text-anchor="middle">RBC Cast (Tamm-Horsfall Matrix)</text></svg>`,
+    options: [
+      { text: "ដំបៅរលាកធ្ងន់ធ្ងរនៅកម្រិតតម្រង Glomerulus នៃតម្រងនោម (Acute Glomerulonephritis)", isCorrect: true },
+      { text: "ការរលាកផ្លូវបង្ហូរនោមខាងក្រោម ឬប្លោកនោម (Cystitis / Urethritis) ធម្មតា", isCorrect: false },
+      { text: "ការដាច់រលាត់ស្បែកចុងប្រដាប់ភេទដោយសារការកកិតសម្លៀកបំពាក់", isCorrect: false },
+      { text: "ការឆ្លងមេរោគផ្សិត Candida albicans លើភ្នាសទ្វារមាសរបស់ស្ត្រី", isCorrect: false }
+    ],
+    rationale: "យោងតាមស្លាយមេរៀន Lesson 3 (Microscopic examination ស្លាយ ៣៥)៖ ស៊ីឡាំងកោសិកាក្រហម (RBC casts) កកើតឡើងនៅពេលកោសិកា RBCs ធ្លាយចេញពី Glomerulus ដែលរលាក (Glomerulonephritis) ហើយហូរចូលក្នុងបំពង់ទុបុយឡា រួចជាប់ស្អិតជាមួយប្រូតេអ៊ីន Tamm-Horsfall mucoprotein។ ដូច្នេះ វត្តមាន RBC casts គឺជាភស្តុតាងច្បាស់លាស់បញ្ជាក់ពីជំងឺតម្រងនោមផ្នែកខាងលើ (Intrarenal / Glomerular disease) មិនមែនផ្លូវនោមក្រោមឡើយ។"
+  },
+  {
+    topic: "Pre-analytical Quality — Squamous Epithelial Contamination [Evaluate]",
+    title: "លទ្ធផលពិនិត្យកករទឹកនោមរបស់ស្ត្រីម្នាក់បង្ហាញ៖ គ្មានបាក់តេរី គ្មានគ្រាប់ឈាមស ប៉ុន្តែឃើញមាន Squamous Epithelial Cells ជាច្រើន (>30/HPF)។ ផ្អែកលើការត្រួតពិនិត្យគុណភាពសំណាក តើអ្នកបច្ចេកទេសគួរវាយតម្លៃដូចម្តេច?",
+    hint: "Squamous epithelial cells ច្រើនបញ្ជាក់ពីការប្រឡាក់មេរោគ/កោសិកាពីទ្វារមាស (Contamination) ដោយសារមិនបានធ្វើ Clean-catch ត្រឹមត្រូវ។",
+    options: [
+      { text: "សំណាកមានការប្រឡាក់កោសិកាពីទ្វារមាស ឬស្បែកខាងក្រៅ (Contamination) មិនមែនជា Midstream Clean-Catch ពិតប្រាកដ", isCorrect: true },
+      { text: "អ្នកជំងឺមានជំងឺមហារីកតម្រងនោមដំណាក់កាលចុងក្រោយដែលត្រូវវះកាត់បន្ទាន់", isCorrect: false },
+      { text: "ជាសញ្ញាបញ្ជាក់ថាអ្នកជំងឺមានការខ្សោយតម្រងនោមស្រួចស្រាវ Acute Tubular Necrosis", isCorrect: false },
+      { text: "សំណាកមានគុណភាពល្អឥតខ្ចោះ អាចយកទៅធ្វើតេស្តបណ្តុះមេរោគបានយ៉ាងត្រឹមត្រូវ", isCorrect: false }
+    ],
+    rationale: "យោងតាមស្លាយ Lesson 3 (Non-pathologic Turbidity ស្លាយ ២១)៖ Squamous epithelial cells កើតឡើងពីការប្រឡាក់ (Contamination) ពេលប្រមូលទឹកនោមពីតំបន់ប្រដាប់ភេទខាងក្រៅ ឬទ្វារមាស ជាពិសេសចំពោះស្ត្រី។ វត្តមានកោសិកានេះច្រើនបង្ហាញថាសំណាកមិនមែនជា Midstream Clean-Catch ត្រឹមត្រូវឡើយ ហើយគ្មានតម្លៃក្នុងការធ្វើរោគវិនិច្ឆ័យជំងឺតម្រងនោមទេ។"
+  },
+  {
+    topic: "Specific Gravity vs Osmolality — Diabetes Mellitus vs Insipidus [Analyze]",
+    title: "អ្នកជំងឺពីរនាក់សុទ្ធតែមានអាការៈនោមច្រើន (Polyuria): អ្នកជំងឺ A មានទឹកនោមស្លេកតែមាន SG = 1.035 (ឡើងខ្ពស់); រីឯអ្នកជំងឺ B មានទឹកនោមស្លេកតែមាន SG = 1.002 (ទាបខ្លាំង)។ តើការវិភាគណាត្រឹមត្រូវចំពោះអ្នកជំងឺទាំងពីរ?",
+    hint: "អ្នកជំងឺ A មានជាតិស្ករ Glucose ធ្ងន់ធ្ងរ (Diabetes Mellitus); អ្នកជំងឺ B ខ្វះអរម៉ូន ADH (Diabetes Insipidus)។",
+    options: [
+      { text: "អ្នកជំងឺ A មានជាតិស្ករគ្លុយកូសខ្ពស់ (Diabetes Mellitus) រីឯអ្នកជំងឺ B ខ្វះអរម៉ូន ADH (Diabetes Insipidus)", isCorrect: true },
+      { text: "អ្នកជំងឺ A ខ្វះជាតិទឹកធ្ងន់ធ្ងរ រីឯអ្នកជំងឺ B មានជំងឺខ្សោយបេះដូងកម្រិតធ្ងន់", isCorrect: false },
+      { text: "អ្នកជំងឺទាំងពីរមានជំងឺដូចគ្នាបេះបិទ គឺជំងឺខ្សោយតម្រងនោមរ៉ាំរ៉ៃដំណាក់កាលចុងក្រោយ", isCorrect: false },
+      { text: "អ្នកជំងឺ A ផឹកទឹកច្រើនជ្រុល រីឯអ្នកជំងឺ B ញ៉ាំអាហារប្រៃខ្លាំងលើសកម្រិត", isCorrect: false }
+    ],
+    rationale: "ស្លាយមេរៀន Lesson 3 បង្ហាញភាពខុសគ្នា៖ ក្នុង Diabetes Mellitus កំហាប់ Glucose ខ្ពស់ធ្លាយចូលទឹកនោមបង្ក Osmotic diuresis (នោមច្រើន) តែ Glucose ជាម៉ូលេគុលធ្ងន់ធ្វើឱ្យ Specific Gravity ឡើងខ្ពស់ (>1.030)។ ផ្ទុយទៅវិញ ក្នុង Diabetes Insipidus (ខ្វះ ADH) តម្រងនោមមិនអាចស្រូបទឹកបាន ទឹកនោមចេញមកសុទ្ធតែទឹក គ្មានសារធាតុរលាយច្រើន ធ្វើឱ្យ SG ទាបខ្លាំង (<1.005)។"
+  },
+  {
+    topic: "Urine Odor — Metabolic Significance [Analyze]",
+    title: "ទឹកនោមរបស់អ្នកជំងឺកុមារម្នាក់ដែលចូលបន្ទប់សង្គ្រោះបន្ទាន់ដោយសារសន្លប់ មានក្លិនក្រអូបផ្អែមស្រដៀងនឹងផ្លែឈើទុំ ឬក្លិនថ្នាំលាងក្រចក (Fruity / Sweet odor)។ តើក្លិននេះបណ្តាលមកពីសារធាតុអ្វី?",
+    hint: "Ketone bodies (Acetone, Acetoacetic acid) ក្នុងជំងឺ Diabetic Ketoacidosis (DKA)។",
+    options: [
+      { text: "វត្តមានសារធាតុ Ketones (ដូចជា Acetone) ក្នុងជំងឺ Diabetic Ketoacidosis ឬការអត់អាហារយូរ", isCorrect: true },
+      { text: "វត្តមានឧស្ម័ន Ammonia ពីការឆ្លងមេរោគបាក់តេរី Proteus ក្នុងប្លោកនោម", isCorrect: false },
+      { text: "ការកកកុញនៃអាស៊ីតអាមីណូ Phenylalanine ក្នុងជំងឺ Phenylketonuria", isCorrect: false },
+      { text: "ការហូរឈាមក្នុងតម្រងនោមដោយសារជំងឺគ្រុនឈាមកម្រិតធ្ងន់", isCorrect: false }
+    ],
+    rationale: "យោងតាមស្លាយមេរៀន Lesson 3 (Odor ក្លិន ស្លាយ ២៦)៖ ក្លិនផ្អែម ឬក្លិនផ្លែឈើ (Sweet / Fruity odor) បណ្តាលមកពីវត្តមានសារធាតុ Ketone bodies (ជាពិសេស Acetone ដែលហួតលឿន) ជារឿយៗជួបប្រទះក្នុងអ្នកជំងឺទឹកនោមផ្អែមធ្ងន់ធ្ងរ Diabetic Ketoacidosis (DKA) ឬអ្នកអត់អាហារយូរ (Starvation)។"
+  },
+  {
+    topic: "Renal Anatomy — Retroperitoneal Position & Asymmetry [Understand]",
+    title: "យោងតាមកាយវិភាគវិទ្យានៃប្រព័ន្ធទឹកនោម (Anatomy of Urinary System) តើហេតុអ្វីបានជាតម្រងនោមខាងស្តាំ (Right kidney) ស្ថិតនៅកម្រិតទាបជាងតម្រងនោមខាងឆ្វេងបន្តិច?",
+    hint: "តម្រងនោមស្តាំស្ថិតនៅក្រោមថ្លើម (Liver) ដែលជាសរីរាង្គធំសង្កត់ពីលើ។",
+    options: [
+      { text: "ដោយសារតែមានវត្តមានសរីរាង្គថ្លើម (Liver) ដ៏ធំនៅផ្នែកខាងលើនៃតម្រងនោមស្តាំ", isCorrect: true },
+      { text: "ដោយសារតម្រងនោមស្តាំមានផ្ទុក Nephrons ច្រើនជាងតម្រងនោមឆ្វេងទ្វេដង", isCorrect: false },
+      { text: "ដោយសារបេះដូងស្ថិតនៅខាងស្តាំសង្កត់លើសរសៃឈាមតម្រងនោម", isCorrect: false },
+      { text: "ដោយសារតែតម្រងនោមស្តាំមិនមានស្រទាប់ Adipose capsule ការពារ", isCorrect: false }
+    ],
+    rationale: "ស្លាយមេរៀន Lesson 1 (ផ្នែកទី ១ កាយវិភាគសាស្ត្រតម្រងនោម ស្លាយ ៥) បញ្ជាក់ថា៖ តម្រងនោមទាំងពីរស្ថិតនៅ Retroperitoneal ចន្លោះ T12 និង L3។ តម្រងនោមខាងស្តាំស្ថិតនៅក្រោមថ្លើម (Liver) ដូច្នេះវាឋិតនៅទាបជាងបន្តិចបើប្រៀបធៀបនឹងតម្រងនោមខាងឆ្វេង។"
+  },
+  {
+    topic: "24-Hour Urine Collection — Protocol Precision [Apply]",
+    title: "ក្នុងការណែនាំអ្នកជំងឺឱ្យប្រមូលទឹកនោម ២៤ ម៉ោង (24-hour Timed Collection) សម្រាប់ការវាស់ Creatinine Clearance តើការណែនាំស្តីពីការនោមនៅម៉ោង ៦ ព្រឹកថ្ងៃទី១ និងម៉ោង ៦ ព្រឹកថ្ងៃទី២ ត្រូវធ្វើដូចម្តេច?",
+    hint: "ម៉ោង ៦ ព្រឹកថ្ងៃទី១ នោមចោល (មិនយក); ម៉ោង ៦ ព្រឹកថ្ងៃទី២ នោមត្រងយកទាំងអស់។",
+    options: [
+      { text: "ម៉ោង ៦ ព្រឹកថ្ងៃទី១ ត្រូវនោមចោលមិនយកទេ រីឯម៉ោង ៦ ព្រឹកថ្ងៃទី២ ត្រូវនោមត្រងយកទាំងអស់", isCorrect: true },
+      { text: "ម៉ោង ៦ ព្រឹកថ្ងៃទី១ ត្រូវត្រងយក ហើយម៉ោង ៦ ព្រឹកថ្ងៃទី២ ត្រូវនោមចោលមិនបាច់យកឡើយ", isCorrect: false },
+      { text: "ត្រូវត្រងយកទឹកនោមទាំងអស់តាំងពីម៉ោង ៦ ព្រឹកថ្ងៃទី១ រហូតដល់ម៉ោង ១២ យប់ប៉ុណ្ណោះ", isCorrect: false },
+      { text: "ត្រងយកតែទឹកនោមណាដែលនោមនៅពេលថ្ងៃ ចំណែកទឹកនោមពេលយប់ត្រូវចាក់ចោល", isCorrect: false }
+    ],
+    rationale: "យោងតាមស្លាយ Lesson 2 (វិធីស្រង់យកទឹកនោម ២៤ ម៉ោង ស្លាយ ១១)៖ នៅម៉ោង ៦ ព្រឹកថ្ងៃទី១ ត្រូវនោមចោល (មិនត្រងយកទេ) ដើម្បីកំណត់ស្ថានភាពប្លោកនោមទទេជាចំណុចចាប់ផ្តើម។ បន្ទាប់ពីនោះ រាល់ការនោមទាំងអស់ត្រូវត្រងទុកក្នុងធុង រហូតដល់ម៉ោង ៦ ព្រឹកថ្ងៃទី២ ដែលការនោមលើកចុងក្រោយនេះក៏ត្រូវតែត្រងយកបញ្ចូលក្នុងធុងដែរ។"
+  },
+  {
+    topic: "Renal Hormones — Aldosterone vs ANP Antagonism [Analyze]",
+    title: "តើអ័រម៉ូន Aldosterone (បញ្ចេញពី Adrenal Cortex) និងអ័រម៉ូន ANP (បញ្ចេញពីបេះដូង) មានអំពើផ្ទុយគ្នាយ៉ាងដូចម្តេចលើតុល្យភាពជាតិអំបិល និងទឹកនោម?",
+    hint: "Aldosterone បង្កើនការស្រូប Na+ និងទឹក (ទឹកនោមថយចុះ); ANP ទប់ស្កាត់ការស្រូប Na+ និងទឹក (ទឹកនោមច្រើន)។",
+    options: [
+      { text: "Aldosterone បង្កើនការស្រូបយក Na+ និងទឹក (បន្ថយទឹកនោម) រីឯ ANP រារាំងការស្រូប Na+ និងទឹក (បង្កើនទឹកនោម)", isCorrect: true },
+      { text: "Aldosterone ជំរុញឱ្យបាត់បង់ជាតិទឹក រីឯ ANP ជួយរក្សាជាតិស្ករក្នុងសរសៃឈាម", isCorrect: false },
+      { text: "អ័រម៉ូនទាំងពីរជួយកាត់បន្ថយសម្ពាធឈាមដោយបញ្ចេញជាតិប៉ូតាស្យូមចោលទាំងអស់", isCorrect: false },
+      { text: "ANP ផលិតឡើងពីតម្រងនោម រីឯ Aldosterone ផលិតឡើងពីខួរក្បាល Hypothalamus", isCorrect: false }
+    ],
+    rationale: "ស្លាយមេរៀន Lesson 1 (ស្លាយ ១៥) បង្ហាញភាពផ្ទុយគ្នា៖ Aldosterone (ពី Adrenal cortex) បង្កើនការស្រូបចូល Na+ និងទឹកមកក្នុងសរសៃឈាម ធ្វើឱ្យបរិមាណទឹកនោមថយចុះ និងសម្ពាធឈាមឡើង។ ផ្ទុយទៅវិញ ANP (Atrial Natriuretic Peptide ពីបេះដូង) ទប់ស្កាត់ការស្រូបចូល Na+ និងទឹក បណ្តាលឱ្យបញ្ចេញអំបិល និងបង្កើនបរិមាណទឹកនោម (Natriuresis & Diuresis) ដើម្បីបន្ថយសម្ពាធឈាម។"
+  },
+  {
+    topic: "Urine Crystals — Calcium Oxalate vs Triple Phosphate [Analyze]",
+    title: "ក្រោមមីក្រូទស្សន៍កករទឹកនោម អ្នកបច្ចេកទេសសង្កេតឃើញគ្រីស្តាល់រាងស្រោមសំបុត្រសំប៉ែត (Envelope-shaped crystals) ក្នុងទឹកនោមអាស៊ីត។ តើគ្រីស្តាល់នេះជាប្រភេទអ្វី?",
+    hint: "Calcium oxalate dihydrate មានរាងស្រោមសំបុត្រ (Envelope) ឃើញក្នុងទឹកនោមអាស៊ីត។",
+    svg: `<svg width="220" height="85" viewBox="0 0 220 85"><rect x="40" y="20" width="45" height="45" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/><line x1="40" y1="20" x2="85" y2="65" stroke="#f59e0b" stroke-width="2"/><line x1="85" y1="20" x2="40" y2="65" stroke="#f59e0b" stroke-width="2"/><text x="62.5" y="78" fill="#f8fafc" font-size="8" text-anchor="middle">Envelope (Ca Oxalate)</text><rect x="135" y="25" width="55" height="35" rx="3" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/><line x1="145" y1="25" x2="145" y2="60" stroke="#94a3b8"/><line x1="180" y1="25" x2="180" y2="60" stroke="#94a3b8"/><text x="162.5" y="78" fill="#94a3b8" font-size="8" text-anchor="middle">Coffin-lid (Triple PO4)</text></svg>`,
+    options: [
+      { text: "Calcium oxalate crystal (គ្រីស្តាល់កាល់ស្យូមអុកសាឡាត រាងស្រោមសំបុត្រ)", isCorrect: true },
+      { text: "Triple phosphate crystal (គ្រីស្តាល់រាងគម្របក្តារមឈូស Coffin-lid ក្នុងទឹកនោមបាស)", isCorrect: false },
+      { text: "Uric acid crystal (គ្រីស្តាល់រាងពេជ្រ ឬចានសំប៉ែត ពណ៌លឿងត្នោត)", isCorrect: false },
+      { text: "Cystine crystal (គ្រីស្តាល់រាងឆកោន ៦ ជ្រុងស្មើ)", isCorrect: false }
+    ],
+    rationale: "យោងតាមរូបភាព Microscopic examination ក្នុងស្លាយ Lesson 3 (ស្លាយ ៣៥)៖ Calcium oxalate crystal (ទម្រង់ Dihydrate) មានរាងដូចស្រោមសំបុត្រសំបុត្រ (Envelope form) ឬ Octahedral ជួបប្រទះក្នុងទឹកនោមអាស៊ីត ឬអព្យាក្រឹត។ ចំណែក Triple phosphate (Magnesium ammonium phosphate) មានរាងដូចគម្របក្តារមឈូស (Coffin-lid) ឃើញតែក្នុងទឹកនោមបាស (Alkaline urine) ប៉ុណ្ណោះ។"
+  },
+  {
+    topic: "Renal Physiology — Loop of Henle Permeability [Analyze]",
+    title: "នៅក្នុងរចនាសម្ព័ន្ធ Loop of Henle នៃ Nephron តើផ្នែក Descending limb និងផ្នែក Ascending limb មានលក្ខណៈជ្រាបទឹក (Water permeability) ខុសគ្នាយ៉ាងដូចម្តេច?",
+    hint: "Descending limb ជ្រាបទឹកខ្ពស់ (High H2O reabsorption); Ascending limb មិនជ្រាបទឹកដាច់ខាត (No H2O permeability) តែបូមអំបិល Na+/Cl-។",
+    options: [
+      { text: "Descending limb ជ្រាបទឹកខ្ពស់ រីឯ Ascending limb មិនជ្រាបទឹកដាច់ខាត (No H2O permeability) តែបូមអំបិលចេញ", isCorrect: true },
+      { text: "Descending limb មិនជ្រាបទឹកទាល់តែសោះ រីឯ Ascending limb ជ្រាបទឹកបាន ១០០%", isCorrect: false },
+      { text: "ផ្នែកទាំងពីរជ្រាបទឹក និងបញ្ចេញអំបិលក្នុងសមាមាត្រស្មើគ្នាទាំងស្រុង", isCorrect: false },
+      { text: "Descending limb បញ្ចេញតែជាតិស្ករ Glucose រីឯ Ascending limb បញ្ចេញតែប្រូតេអ៊ីន", isCorrect: false }
+    ],
+    rationale: "យោងតាមស្លាយមេរៀន Lesson 1 (Loop of Henle ស្លាយ ១៤)៖ ផ្នែក Descending limb មាន 'High H2O reabsorption' ធ្វើឱ្យទឹកនោមបឋមកាន់តែខាប់ (ឡើងដល់ 1200 mOsm នៅបាត)។ ចំណែកផ្នែក Ascending limb គឺ 'No H2O permeability' (មិនជ្រាបទឹកដាច់ខាត) ប៉ុន្តែមាន Active transport បូម Na+ និង Cl- ចេញ ដែលបង្កើត Medullary osmotic gradient ដ៏សំខាន់សម្រាប់តម្រងនោមប្រមូលផ្តុំកំហាប់ទឹកនោម។"
+  },
+  {
+    topic: "Urine Physical Exam — Tea-Colored Urine in Glomerulonephritis [Clinical Analyze]",
+    title: "អ្នកជំងឺកុមារម្នាក់ក្រោយរលាកបំពង់ក ២ សប្តាហ៍ នោមចេញមកមានពណ៌ដូចទឹកតែខាប់ ឬទឹកកូឡា (Tea-colored / Cola-colored urine)។ ផ្អែកលើមេរៀន Lesson 3 តើពណ៌នេះបណ្តាលមកពីកត្តាអ្វី?",
+    hint: "កោសិកាឈាមក្រហមធ្លាយពី Glomerulonephritis ត្រូវជាតិអាស៊ីតក្នុងទុបុយឡាធ្វើអុកស៊ីតកម្មអេម៉ូក្លូប៊ីនទៅជា Methemoglobin។",
+    options: [
+      { text: "កោសិកាក្រហមធ្លាយពី Glomerulonephritis រងការកត់ស៊ីតកម្មអេម៉ូក្លូប៊ីនទៅជា Acid hematin / Methemoglobin ក្នុងបំពង់ទុបុយឡា", isCorrect: true },
+      { text: "ការលេចធ្លាយជាតិខ្លាញ់ Chyle ពីប្រព័ន្ធទឹករងៃចូលទៅក្នុងប្លោកនោម", isCorrect: false },
+      { text: "ការឆ្លងមេរោគផ្សិត Candida albicans ក្នុងបង្ហូរនោម Urethra", isCorrect: false },
+      { text: "អ្នកជំងឺបានផឹកទឹកតែ និងកូឡាច្រើនជ្រុលហួសពី ៥ លីត្រក្នុងមួយថ្ងៃ", isCorrect: false }
+    ],
+    rationale: "យោងតាមស្លាយ Lesson 3 (ស្លាយ ៩-១០)៖ ទឹកនោមពណ៌ដូចទឹកសាច់ ឬទឹកកូឡា (Tea-colored / Cola-colored) គឺជាសញ្ញាគ្លីនិកចម្បងនៃ Acute Glomerulonephritis។ កោសិកា RBCs ដែលជ្រាបធ្លាយពី Glomerulus ត្រូវចំណាយពេលយូរក្នុងបំពង់ទុបុយឡាអាស៊ីត ធ្វើឱ្យ Hemoglobin រងការបំប្លែងទៅជា Methemoglobin/Acid hematin បង្កើតបានជាពណ៌ត្នោតក្រមៅដូចកូឡា។"
+  },
+  {
+    topic: "Specimen Rejection Criteria — Acceptability Thresholds [Evaluate]",
+    title: "យោងតាមលក្ខណៈវិនិច្ឆ័យនៃភាពមិនទទួលយកវត្ថុវិភាគទឹកនោម (Specimen Rejection Criteria) តើករណីណាខាងក្រោមនេះដែលត្រូវបដិសេធសំណាកមិនយកមកធ្វើការវិភាគ?",
+    hint: "សំណាកមិនដាក់ទូទឹកកកលើសពី ២ ម៉ោង ឬសំណាកក្លាសេលើសពី ៤ ម៉ោង ឬបរិមាណតិចជាង 2.5 mL (លើកលែងកុមារ)។",
+    options: [
+      { text: "សំណាកមិនដាក់ក្នុងទូទឹកកកដែលមានអាយុលើសពី ២ ម៉ោង ឬដបគ្មានស្លាកព័ត៌មានអត្តសញ្ញាណអ្នកជំងឺ", isCorrect: true },
+      { text: "សំណាកដែលប្រមូលបាននៅម៉ោង ៦ ព្រឹក យកមកដល់មន្ទីរពិសោធន៍ក្នុងរយៈពេល ៣០ នាទី", isCorrect: false },
+      { text: "សំណាកទឹកនោមពណ៌លឿងស្រាលដែលមានបរិមាណ 50 mL ក្នុងកំប៉ុងស្អាតបិទជិត", isCorrect: false },
+      { text: "សំណាករបស់ទារកទើបនឹងកើតដែលមានបរិមាណ 3 mL ដាក់ក្នុងដបពិសេសត្រឹមត្រូវ", isCorrect: false }
+    ],
+    rationale: "ស្លាយមេរៀន Lesson 2 (ស្លាយ ១៣) ចែងច្បាស់ពីលក្ខណៈវិនិច្ឆ័យបដិសេធ៖ 1. អាយុសំណាកមិនដាក់ទូទឹកកកលើសពី ២ ម៉ោង (ឬដាក់ទូទឹកកកលើសពី ៤ ម៉ោង), 2. ដបមិនស្អាត, 3. បរិមាណតិចជាង 2.5 mL (លើកលែងតែកុមារ ឬអ្នករលាកផ្លូវនោម), 4. ដបគ្មានស្លាកឈ្មោះ អត្តសញ្ញាណ ភេទ អាយុ កាលបរិច្ឆេទ និងពេលវេលាស្រង់យកច្បាស់លាស់។"
+  },
+  {
+    topic: "Microscopic Sediment — Broad Waxy Casts in ESRD [Evaluate]",
+    title: "លើគំនាសកករទឹកនោមរបស់អ្នកជំងឺខ្សោយតម្រងនោមរ៉ាំរ៉ៃដំណាក់កាលចុងក្រោយ (End-Stage Renal Disease) ពិនិត្យឃើញមាន Broad Waxy Casts ធំៗក្រាស់ដែលមានគែមឆកៗ (Notched edges)។ តើវត្តមានស៊ីឡាំងនេះបញ្ជាក់ពីអ្វី?",
+    hint: "Broad waxy casts កើតឡើងក្នុងបំពង់ Collecting ducts ដែលរីកធំ បញ្ជាក់ពី Severe urinary stasis (Renal Failure Cast)។",
+    options: [
+      { text: "ការរីកធំនៃបំពង់ Collecting ducts និងការស្ទះលំហូរទឹកនោមធ្ងន់ធ្ងរ (Severe urinary stasis / Renal Failure Cast)", isCorrect: true },
+      { text: "ការហាត់ប្រាណរត់ម៉ារ៉ាតុងកម្រិតស្រាលរបស់យុវជនដែលមានសុខភាពល្អ", isCorrect: false },
+      { text: "ការប្រឡាក់កាកសំណល់សាប៊ូលាងដៃចូលក្នុងកំប៉ុងទឹកនោមពេលកំពុងត្រង", isCorrect: false },
+      { text: "ជាកោសិកាធម្មតារបស់ស្ត្រីមានផ្ទៃពោះក្នុងត្រីមាសទីមួយ", isCorrect: false }
+    ],
+    rationale: "យោងតាមស្លាយមេរៀន Lesson 3 (ស្លាយ ៣៥)៖ Waxy casts និង Broad casts ត្រូវបានគេហៅថា 'Renal failure casts'។ ពួកវាកកើតឡើងដោយសារការស្ទះលំហូរទឹកនោមយ៉ាងធ្ងន់ធ្ងរ (Severe urinary stasis) នៅក្នុងបំពង់ Collecting ducts ដែលរីកធំខុសប្រក្រតីនៃតម្រងនោមដែលរងការខូចខាតរ៉ាំរ៉ៃ។ គែមឆកៗ (Cracked/notched edges) និងសភាពរលោងដូចក្រមួនបញ្ជាក់ពីអាយុកាលកកស្ទះយូរ។"
+  },
+  {
+    topic: "Urine Clarity — Milky Urine Differential (Chyluria) [Analyze]",
+    title: "អ្នកជំងឺម្នាក់រស់នៅតំបន់ឆ្លងព្រូនហ្វីឡារៀ (Filariasis) នោមចេញមកមានសភាពសកករដូចទឹកដោះគោ (Milky urine)។ ពេលពិនិត្យគីមីឃើញមានវត្តមានកំហាប់ជាតិខ្លាញ់ Lipids និង Chyle ខ្ពស់។ តើស្ថានភាពនេះហៅថាអ្វី?",
+    hint: "Chyluria កើតឡើងដោយសារការស្ទះ និងបែកធ្លាយរវាងប្រព័ន្ធទឹករងៃ (Lymphatic duct) និងផ្លូវទឹកនោម។",
+    options: [
+      { text: "Chyluria (ការបែកធ្លាយលាយចូលគ្នារវាងទឹករងៃ Chyle និងប្រព័ន្ធទឹកនោមដោយសារព្រូន Filariasis)", isCorrect: true },
+      { text: "Glucosuria (ការកើនឡើងជាតិស្ករគ្លុយកូសក្នុងទឹកនោមដោយសារជំងឺទឹកនោមផ្អែម)", isCorrect: false },
+      { text: "Alkaptonuria (ការបញ្ចេញអាស៊ីត Homogentisic acid ធ្វើឱ្យទឹកនោមឡើងខ្មៅ)", isCorrect: false },
+      { text: "Ketonuria (ការដុតរំលាយជាតិខ្លាញ់ក្នុងពេលអត់បាយយូរ)", isCorrect: false }
+    ],
+    rationale: "ស្លាយមេរៀន Lesson 3 (Pathologic Turbidity ស្លាយ ២៣) បញ្ជាក់ថា៖ ទឹកនោមសដូចទឹកដោះ (Milky urine) បណ្តាលមកពី Chyluria (វត្តមាន Chyle ក្នុងទឹកនោម) ដែលជាញឹកញាប់បណ្តាលមកពីព្រូន Wuchereria bancrofti (Lymphatic filariasis) ស្ទះសរសៃទឹករងៃ thoracic/retroperitoneal lymphatic vessels ធ្វើឱ្យធ្លាយតភ្ជាប់ជាមួយផ្លូវបង្ហូរនោម (Lymphatic-urinary fistula)។"
+  },
+  {
+    topic: "Bladder Anatomy — Trigone & Detrusor Muscle [Understand]",
+    title: "យោងតាមកាយវិភាគវិទ្យានៃប្លោកនោម (Bladder Anatomy) តើសាច់ដុំណាដែលទទួលខុសត្រូវក្នុងការកន្ត្រាក់ច្របាច់បញ្ចេញទឹកនោម ហើយតំបន់ណាដែលបញ្ជូនសញ្ញាដាស់តឿនទៅខួរក្បាលពេលប្លោកនោមពេញ?",
+    hint: "Detrusor muscle កន្ត្រាក់បញ្ចេញទឹកនោម; Trigone (Triangular region) ផ្តល់សញ្ញាទៅខួរក្បាល។",
+    options: [
+      { text: "Detrusor muscle កន្ត្រាក់បញ្ចេញទឹកនោម រីឯ Trigone (តំបន់ត្រីកោណពិសេស) ផ្តល់សញ្ញាទៅខួរក្បាលពេលប្លោកនោមពេញ", isCorrect: true },
+      { text: "Transitional epithelium កន្ត្រាក់បញ្ចេញទឹកនោម រីឯ Fibrous adventitia ផ្តល់សញ្ញាទៅខួរក្បាល", isCorrect: false },
+      { text: "សាច់ដុំបេះដូង Myocardium បញ្ជាការកន្ត្រាក់ប្លោកនោមតាមរយៈអរម៉ូន ANP", isCorrect: false },
+      { text: "ក្រពេញប្រូស្តាតបុរសជាអ្នកកន្ត្រាក់ច្របាច់ទឹកនោមចេញពីតម្រងនោមទាំងពីរ", isCorrect: false }
+    ],
+    rationale: "ស្លាយមេរៀន Lesson 1 (ស្លាយ ៨-៩) បញ្ជាក់ថា៖ ប្លោកនោមមានស្រទាប់សាច់ដុំ Detrusor muscle ដែលមាននាទីកន្ត្រាក់បញ្ចេញទឹកនោមពេលនោម។ នៅបាតប្លោកនោមមានតំបន់ត្រីកោណពិសេស (Trigone / Triangular region) ដែលសំបូរទៅដោយសរសៃប្រសាទរំញោចខ្លាំង (Highly sensitive to expansion) បញ្ជូនសញ្ញាទៅកាន់ខួរក្បាលនៅពេលប្លោកនោមចាប់ផ្តើមពេញដោយទឹកនោម។"
+  },
+  {
+    topic: "Urine pH — Urea-Splitting Bacterial UTI [Analyze]",
+    title: "អ្នកជំងឺស្រីម្នាក់មានរោគសញ្ញារលាកប្លោកនោម នោមក្រហាយញឹកញាប់។ ពិនិត្យទឹកនោមស្រស់ភ្លាមៗឃើញ pH = 8.5 (បាសខ្លាំង) ជាមួយវត្តមានគ្រាប់បាក់តេរី Gram-negative bacilli និងគ្រីស្តាល់ Triple phosphate។ តើមេរោគណាទំនងជាភ្នាក់ងារបង្កហេតុបំផុត?",
+    hint: "Proteus mirabilis បញ្ចេញអង់ស៊ីម Urease បំបែក Urea ទៅជា Ammonia បង្កឱ្យទឹកនោមឡើងបាសខ្លាំង។",
+    options: [
+      { text: "Proteus mirabilis (បាក់តេរីផលិតអង់ស៊ីម Urease បំបែក Urea ជា Ammonia ធ្វើឱ្យ pH ឡើងបាស)", isCorrect: true },
+      { text: "Escherichia coli ដែលមិនមានសមត្ថភាពផលិតអង់ស៊ីម Urease", isCorrect: false },
+      { text: "Mycobacterium tuberculosis ដែលចូលចិត្តរស់នៅក្នុងទឹកនោមអាស៊ីតខ្លាំង", isCorrect: false },
+      { text: "វីរុសរលាកថ្លើមប្រភេទបេ (Hepatitis B virus)", isCorrect: false }
+    ],
+    rationale: "យោងតាមស្លាយមេរៀន Lesson 1 (ស្លាយ ១៦)៖ ទឹកនោមធម្មតាមាន pH ~6.0។ ទឹកនោមបាស (Alkaline urine pH > 6.0 ឬឡើងដល់ 8-9) លើសំណាកស្រស់ បញ្ជាក់ពីការឆ្លងមេរោគផ្លូវទឹកនោមដោយពួក Urea-splitting organisms ដូចជា Proteus mirabilis ឬ Klebsiella ដែលផលិតអង់ស៊ីម Urease បំប្លែង Urea ទៅជា Ammonia (NH3) និង Ammonium hydroxide ធ្វើឱ្យទឹកនោមឡើងបាស និងបង្កឱ្យកករគ្រីស្តាល់ Triple phosphate។"
+  },
+  {
+    topic: "Microscopic Differential — Pyelonephritis vs Lower UTI [Evaluate]",
+    title: "អ្នកជំងឺស្រីម្នាក់មានគ្រុនក្តៅ ឈឺចង្កេះចាក់ទៅក្រោយ (Flank pain) និងនោមក្រហាយ។ លើការពិនិត្យកករទឹកនោម តើវត្តមាននៃធាតុមិនប្រក្រតីមួយណាដែលជួយគ្រូពេទ្យបញ្ជាក់ថាជាជំងឺរលាកតម្រងនោម Pyelonephritis (Upper UTI) មិនមែនត្រឹមតែរលាកប្លោកនោម Cystitis (Lower UTI)?",
+    hint: "WBC Casts (ស៊ីឡាំងកោសិកាឈាមស) កកើតតែក្នុង Renal tubules នៃតម្រងនោមប៉ុណ្ណោះ។",
+    svg: `<svg width="220" height="85" viewBox="0 0 220 85"><rect x="35" y="28" width="150" height="30" rx="15" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/><circle cx="65" cy="43" r="6" fill="#38bdf8"/><circle cx="85" cy="43" r="6" fill="#38bdf8"/><circle cx="105" cy="43" r="6" fill="#38bdf8"/><circle cx="125" cy="43" r="6" fill="#38bdf8"/><circle cx="145" cy="43" r="6" fill="#38bdf8"/><text x="110" y="20" fill="#f59e0b" font-size="8.5" text-anchor="middle">WBC Cast (Pyelonephritis Marker)</text></svg>`,
+    options: [
+      { text: "White Blood Cell Casts (WBC casts / ស៊ីឡាំងកោសិកាឈាមសដែលកកើតក្នុងទុបុយឡាតម្រងនោម)", isCorrect: true },
+      { text: "បាក់តេរីរាយប៉ាយ និងកោសិកាឈាមសទោលៗ (WBCs) ក្នុងទឹកនោម", isCorrect: false },
+      { text: "កោសិកា Squamous epithelial cells ក្នុងបរិមាណច្រើនលើសលប់", isCorrect: false },
+      { text: "គ្រីស្តាល់ Amorphous urates ពណ៌ផ្កាឈូកក្រោយពេលក្លាសេ", isCorrect: false }
+    ],
+    rationale: "វត្តមាន WBCs និងបាក់តេរីអាចកើតមានទាំងក្នុង Cystitis (Lower UTI) និង Pyelonephritis (Upper UTI)។ ប៉ុន្តែ ស៊ីឡាំងកោសិកាឈាមស (WBC casts) អាចកកើតឡើងបានតែនៅក្នុង Renal tubules នៃតម្រងនោមប៉ុណ្ណោះ។ ដូច្នេះ វត្តមាន WBC casts គឺជាលក្ខណៈវិនិច្ឆ័យផ្តាច់មុខដែលបញ្ជាក់ថាការឆ្លងមេរោគបានរាលដាលដល់តម្រងនោម (Pyelonephritis)។"
+  },
+  {
+    topic: "Urine Color — Drug-Induced Chromogens [Analyze]",
+    title: "អ្នកជំងឺរបេងម្នាក់កំពុងលេបថ្នាំ Rifampicin មកពិគ្រោះយោបល់ដោយការភ័យខ្លាចព្រោះទឹកនោមរបស់គាត់ប្រែជាពណ៌ទឹកក្រូចចាស់ (Bright orange urine)។ ផ្អែកលើមេរៀន Lesson 3 តើអ្នកបច្ចេកទេសគួរពន្យល់អ្នកជំងឺដូចម្តេច?",
+    hint: "ថ្នាំ Rifampicin ឬ Phenazopyridine បញ្ចេញកាកសំណល់ពណ៌ទឹកក្រូចតាមទឹកនោមដោយធម្មជាតិ មិនមែនជាការហូរឈាមទេ។",
+    options: [
+      { text: "ជាផលរំខានគ្មានគ្រោះថ្នាក់ពីការបញ្ចេញកាកសំណល់ថ្នាំ Rifampicin តាមទឹកនោម មិនមែនជាការហូរឈាមឡើយ", isCorrect: true },
+      { text: "ជាសញ្ញាព្រមាននៃការធ្លាយប្លោកនោមធ្ងន់ធ្ងរដែលតម្រូវឱ្យវះកាត់ជាបន្ទាន់", isCorrect: false },
+      { text: "ជាការឆ្លងមេរោគបាក់តេរី Pseudomonas aeruginosa ក្នុងផ្លូវទឹកនោម", isCorrect: false },
+      { text: "ជាសញ្ញានៃការខូចខាតកោសិកា Podocytes ទាំងស្រុងនៅក្នុងតម្រងនោម", isCorrect: false }
+    ],
+    rationale: "យោងតាមស្លាយមេរៀន Lesson 3 (Abnormal urine color ស្លាយ ៨)៖ ទឹកនោមពណ៌ទឹកក្រូច (Orange urine) អាចបណ្តាលមកពីការខ្សោះជាតិទឹក ឬការប្រើប្រាស់ឱសថដូចជា Rifampicin (ថ្នាំរបេង) ឬ Phenazopyridine (Pyridium — ថ្នាំបំបាត់ការឈឺចាប់ផ្លូវនោម)។ សារធាតុទាំងនេះបញ្ចេញពណ៌ទឹកក្រូចដោយធម្មជាតិ និងមិនបង្កគ្រោះថ្នាក់ដល់អ្នកជំងឺឡើយ។"
+  },
+  {
+    topic: "Renal Clearance & Tubular Reabsorption — Glucose Threshold [Analyze]",
+    title: "តម្រង Glomerulus ច្រោះជាតិស្ករគ្លុយកូសចូលក្នុងទឹកនោមបឋម ១០០% ប៉ុន្តែទឹកនោមរបស់មនុស្សធម្មតាមិនមានជាតិស្ករទាល់តែសោះ។ តើបំពង់ទុបុយឡាណាដែលទទួលខុសត្រូវស្រូបយក Glucose ត្រឡប់មកវិញទាំងអស់?",
+    hint: "Proximal Convoluted Tubule (PCT) ស្រូបយក Glucose និង Amino acids មកវិញ ១០០% តាម Active transport។",
+    options: [
+      { text: "Proximal Convoluted Tubule (PCT / បំពង់កោងជិត ស្រូបយក Glucose និង Amino acids មកវិញ ១០០%)", isCorrect: true },
+      { text: "Descending limb នៃ Loop of Henle ដែលជ្រាបតែជាតិស្ករគ្លុយកូស", isCorrect: false },
+      { text: "Distal Convoluted Tubule (DCT) ក្រោមឥទ្ធិពលនៃអរម៉ូន Aldosterone", isCorrect: false },
+      { text: "ប្លោកនោម (Urinary Bladder) តាមរយៈស្រទាប់ Transitional epithelium", isCorrect: false }
+    ],
+    rationale: "យោងតាមស្លាយ Lesson 1 (Nephron & Tubular functions ស្លាយ ១៤)៖ បំពង់កោងជិត Proximal Convoluted Tubule (PCT) ទទួលខុសត្រូវចំពោះ Reabsorption ស្ទើរតែទាំងស្រុងនៃសារធាតុចិញ្ចឹមសំខាន់ៗ រួមមាន គ្លុយកូស (Glucose 100%) និង អាស៊ីតអាមីណូ (Amino acids 100%) ព្រមទាំងទឹក និងអំបិលរ៉ែភាគច្រើន លុះត្រាតែកំហាប់ជាតិស្ករក្នុងឈាមលើស Renal threshold (~180 mg/dL) ទើបធ្លាយចូលទឹកនោម។"
+  },
+  {
+    topic: "Laboratory Biosafety — Disinfection Protocols [Apply]",
+    title: "ក្នុងមន្ទីរពិសោធន៍វិភាគទឹកនោម យោងតាមគោលការណ៍ Biosafety Guidelines តើសូលុយស្យុងរំងាប់មេរោគណាដែលត្រូវបានណែនាំឱ្យប្រើប្រាស់ជាប្រចាំសម្រាប់ជូតសម្អាតតុការងារ និងកម្ចាត់មេរោគដែលកំពប់?",
+    hint: "សូលុយស្យុង 70% alcohol ឬ freshly prepared 10% bleach (sodium hypochlorite)។",
+    options: [
+      { text: "សូលុយស្យុងអាល់កុល 70% (70% alcohol) ឬទឹកសាវែលលាយថ្មីៗ 10% (Freshly prepared 10% bleach solution)", isCorrect: true },
+      { text: "ទឹកម៉ាស៊ីនធម្មតាលាយជាមួយទឹកក្រូចឆ្មារកំហាប់ទាប", isCorrect: false },
+      { text: "សូលុយស្យុងអាស៊ីត Formalin សុទ្ធ ១០០% ដោយមិនបាច់ពាក់ម៉ាស់", isCorrect: false },
+      { text: "សូលុយស្យុង Methylene blue លាយជាមួយស្ករគ្លុយកូស", isCorrect: false }
+    ],
+    rationale: "ស្លាយមេរៀន Lesson 2 (សុវត្ថិភាពនៃបុគ្គលិកមន្ទីរពិសោធន៍ ស្លាយ ១៩) ចែងច្បាស់ថា៖ ត្រូវសម្អាតទីកន្លែងមន្ទីរពិសោធន៍ និងតុធ្វើការដោយអាល់កុល (70% alcohol) ឬទឹកសាវែលដែលទើបលាយថ្មីៗកំហាប់ ១០% (freshly prepared 10% bleach solution / sodium hypochlorite) ដើម្បីធានាសម្លាប់មេរោគបាក់តេរី វីរុស និងមេរោគឆ្លងតាមឈាម/ទឹកនោម។"
+  },
+  {
+    topic: "Specific Gravity — Refractometer vs Radiopaque Dye Artifact [Evaluate]",
+    title: "អ្នកជំងឺម្នាក់ក្រោយពេលថតកាំរស្មីអ៊ិចចាក់ថ្នាំពណ៌ (Radiographic Contrast Media) មកពិនិត្យទឹកនោមឃើញ Specific Gravity ឡើងខ្ពស់ហួសមាត្រដ្ឋាន (>1.050) ប៉ុន្តែ Osmolality ឡើងខ្ពស់តែបន្តិចបន្តួចប៉ុណ្ណោះ។ តើការបកស្រាយណាសមស្របបំផុត?",
+    hint: "Radiopaque contrast dye មានម៉ូលេគុលធ្ងន់ខ្លាំង ធ្វើឱ្យកើន SG ខ្ពស់ខុសពិតលើ Refractometer តែមិនសូវប៉ះពាល់ Osmolality ឡើយ។",
+    options: [
+      { text: "ថ្នាំពណ៌ Contrast media មានម៉ូលេគុលធ្ងន់ខ្លាំង បង្កើនដង់ស៊ីតេ SG ខ្ពស់ខុសពិតលើ Refractometer", isCorrect: true },
+      { text: "អ្នកជំងឺបានកើតជំងឺខ្សោយបេះដូងស្រួចស្រាវដែលធ្វើឱ្យតម្រងនោមបញ្ឈប់ការបញ្ចេញទឹក", isCorrect: false },
+      { text: "ជាការបញ្ជាក់ថាអ្នកជំងឺមានជំងឺទឹកនោមផ្អែមធ្ងន់ធ្ងរដែលបញ្ចេញគ្លុយកូសរាប់គីឡូក្រាម", isCorrect: false },
+      { text: "ម៉ាស៊ីន Refractometer ត្រូវខូចកញ្ចក់ព្រីសទាំងស្រុងដោយសារកម្តៅបន្ទប់", isCorrect: false }
+    ],
+    rationale: "យោងតាមស្លាយ Lesson 3 (Specific Gravity & Osmolarity ស្លាយ ២៨, ៣២)៖ Specific Gravity វាស់ដង់ស៊ីតេទម្ងន់សរុបនៃសារធាតុរលាយធៀបនឹងទឹក។ ម៉ូលេគុលធ្ងន់ៗដូចជា Radiopaque contrast media (ថ្នាំពណ៌ថត X-ray) បណ្តាលឱ្យ SG ឡើងខ្ពស់ហួសកម្រិត (>1.040-1.050)។ ផ្ទុយទៅវិញ Osmolality វាស់ចំនួនភាគល្អិត (Number of particles) ដូច្នេះវាមិនសូវរងផលប៉ះពាល់ខ្លាំងដោយសារម៉ូលេគុលទម្ងន់ធ្ងន់ទាំងនេះឡើយ។"
+  },
+  {
+    topic: "Microscopic Sediment — Oval Fat Bodies in Nephrotic Syndrome [Analyze]",
+    title: "លើការពិនិត្យកករទឹកនោមរបស់អ្នកជំងឺរោគសញ្ញាតម្រងនោម Nephrotic Syndrome ក្រោមមីក្រូទស្សន៍ពន្លឺប៉ូលែរ (Polarized Light) គេសង្កេតឃើញកោសិកា Oval Fat Bodies បញ្ចេញពន្លឺរាងសញ្ញាខ្វែងម៉ាល់ត៍ (Maltese cross pattern)។ តើសារធាតុខ្លាញ់ដែលបង្កបាតុភូតនេះជាអ្វី?",
+    hint: "កោសិកា Renal tubular epithelial ផ្ទុកតំណក់ខ្លាញ់ Cholesterol esters ដែលបញ្ចេញពន្លឺ birefringent Maltese cross។",
+    options: [
+      { text: "តំណក់ខ្លាញ់ Cholesterol esters ដែលកកកុញក្នុងកោសិកា Renal Tubular Epithelial cells", isCorrect: true },
+      { text: "គ្រាប់ឈាមក្រហមដែលរងការខូចខាតដោយសារថ្នាំ Rifampicin", isCorrect: false },
+      { text: "គ្រីស្តាល់ Calcium phosphate ដែលកករក្នុងទឹកនោមបាស", isCorrect: false },
+      { text: "កាកសំណល់អំបិលសូដ្យូមក្លរួដែលមិនរលាយក្នុងប្លោកនោម", isCorrect: false }
+    ],
+    rationale: "យោងតាមស្លាយមេរៀន Lesson 3 (Adipose cast / Lipiduria ស្លាយ ២២, ៣៥)៖ ក្នុងជំងឺ Nephrotic Syndrome ការជ្រាបធ្លាយប្រូតេអ៊ីន និងខ្លាញ់តាម Glomerulus ធ្វើឱ្យកោសិកា Renal Tubular Epithelial (RTE) cells ស្រូបយកជាតិខ្លាញ់ក្លាយជា Oval Fat Bodies។ ក្រោម Polarized light តំណក់ Cholesterol esters នឹងបំបែកពន្លឺ (Birefringence) បង្កើតជារូបរាងសញ្ញាខ្វែង Maltese cross យ៉ាងច្បាស់។"
+  },
+  {
+    topic: "Urine Chemical Preservatives — Formalin Interference [Analyze]",
+    title: "យោងតាមមេរៀន Lesson 2 ប្រសិនបើអ្នកបច្ចេកទេសបន្ថែមសារធាតុ Formalin ក្នុងសមាមាត្រ 1 mL ក្នុង 100 mL ទឹកនោមដើម្បីថែរក្សាកោសិកា និងស៊ីឡាំង (Casts) តើវាអាចបង្កកំហុសរំខាន (Interference) អ្វីខ្លះលើការធ្វើតេស្តគីមី?",
+    hint: "Formalin ជួយរក្សា formed elements ប៉ុន្តែអាចបង្កឱ្យមានលទ្ធផលវិជ្ជមានក្លែងក្លាយលើតេស្តជាតិស្ករ Glucose (Reducing sugar)។",
+    options: [
+      { text: "Formalin រក្សាទុកកោសិកាបានល្អ ប៉ុន្តែអាចបង្កលទ្ធផលវិជ្ជមានក្លែងក្លាយ (False-positive) លើតេស្ត Glucose", isCorrect: true },
+      { text: "Formalin ធ្វើឱ្យកោសិកាឈាមក្រហមទាំងអស់បែកធ្លាយភ្នាសរលាយបាត់ភ្លាមៗ", isCorrect: false },
+      { text: "Formalin ធ្វើឱ្យទឹកនោមប្រែពណ៌ទៅជាបៃតងចាស់ដូចមេរោគ Pseudomonas", isCorrect: false },
+      { text: "Formalin ជម្រុញឱ្យបាក់តេរីបន្តពូជលឿនជាងមុន ១០ ដងក្នុងទឹកនោម", isCorrect: false }
+    ],
+    rationale: "ស្លាយមេរៀន Lesson 2 (ការប្រុងប្រយ័ត្នក្នុងការស្រង់វត្ថុវិភាគ ស្លាយ ៧) បញ្ជាក់ថា៖ Formalin (1 mL ក្នុង 100 mL ទឹកនោម) ជាសារធាតុ preservative ដ៏ល្អសម្រាប់ថែរក្សារូបរាងកោសិកា (RBCs, WBCs) និងស៊ីឡាំង (Casts) ប្រសិនបើសំណាកមិនអាចមកដល់មន្ទីរពិសោធន៍ក្នុងរយៈពេល ២ ម៉ោង។ ទោះជាយ៉ាងណា Formalin ជា Reducing agent ដូច្នេះវាអាចរំខានដល់តេស្តគីមី ដោយបង្កឱ្យមាន False-positive លើការពិនិត្យស្ករ Glucose (Copper reduction test)។"
+  }
+];
+
+function shuffleArray(arr) {
+  const newArr = [...arr];
+  for (let i = newArr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+  }
+  return newArr;
+}
+
+let activeQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let timeLeft = 60;
+let timerInterval = null;
+let answered = false;
+let userResults = [];
+
+function initQuiz() {
+  activeQuestions = shuffleArray(rawQuestions).map(q => {
+    return {
+      ...q,
+      options: shuffleArray(q.options)
+    };
+  });
+  
+  currentIndex = 0;
+  score = 0;
+  userResults = [];
+  document.getElementById('finalCard').style.display = 'none';
+  document.getElementById('quizCard').style.display = 'block';
+  loadQuestion(currentIndex);
+}
+
+function loadQuestion(index) {
+  answered = false;
+  timeLeft = 60;
+  clearInterval(timerInterval);
+  
+  const q = activeQuestions[index];
+  document.getElementById('topicBadge').textContent = q.topic;
+  document.getElementById('qCount').textContent = `សំណួរទី ${index + 1} នៃ ${activeQuestions.length}`;
+  document.getElementById('questionTitle').textContent = `${index + 1}. ${q.title}`;
+  
+  const diagBox = document.getElementById('diagramContainer');
+  if (q.svg) {
+    diagBox.innerHTML = q.svg;
+    diagBox.style.display = 'flex';
+  } else {
+    diagBox.innerHTML = '';
+    diagBox.style.display = 'none';
+  }
+
+  document.getElementById('hintContent').textContent = q.hint;
+  document.getElementById('hintContent').style.display = 'none';
+  document.getElementById('feedbackBox').style.display = 'none';
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('nextBtn').textContent = (index === activeQuestions.length - 1) ? "ពិនិត្យលទ្ធផល →" : "សំណួរបន្ទាប់ →";
+  
+  const optionsGrid = document.getElementById('optionsGrid');
+  optionsGrid.innerHTML = '';
+  q.options.forEach((optObj, optIdx) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="letter">${String.fromCharCode(65 + optIdx)}.</span> <span>${optObj.text}</span>`;
+    btn.onclick = () => selectOption(optIdx);
+    optionsGrid.appendChild(btn);
+  });
+  
+  updateTimerUI();
+  timerInterval = setInterval(() => {
+    if (timeLeft > 0) {
+      timeLeft--;
+      updateTimerUI();
+    } else {
+      clearInterval(timerInterval);
+      if (!answered) {
+        handleTimeout();
+      }
+    }
+  }, 1000);
+  
+  updateProgress();
+}
+
+function updateTimerUI() {
+  const el = document.getElementById('timerText');
+  const box = document.getElementById('timerBox');
+  el.textContent = timeLeft + 's';
+  if (timeLeft <= 10) {
+    box.classList.add('urgent');
+  } else {
+    box.classList.remove('urgent');
+  }
+}
+
+function toggleHint() {
+  const h = document.getElementById('hintContent');
+  h.style.display = h.style.display === 'none' ? 'block' : 'none';
+}
+
+function selectOption(chosenIdx) {
+  if (answered) return;
+  answered = true;
+  clearInterval(timerInterval);
+  
+  const q = activeQuestions[currentIndex];
+  const buttons = document.querySelectorAll('.option-btn');
+  buttons.forEach(btn => btn.disabled = true);
+  
+  const correctIdx = q.options.findIndex(o => o.isCorrect);
+  const isCorrect = q.options[chosenIdx].isCorrect;
+  
+  if (isCorrect) {
+    score++;
+    buttons[chosenIdx].classList.add('correct');
+  } else {
+    buttons[chosenIdx].classList.add('wrong');
+    buttons[correctIdx].classList.add('correct');
+  }
+  
+  userResults.push({
+    q: q.title,
+    chosen: q.options[chosenIdx].text,
+    correctText: q.options[correctIdx].text,
+    isCorrect: isCorrect,
+    why: q.rationale
+  });
+  
+  document.getElementById('liveScore').textContent = `ពិន្ទុ: ${score} / ${currentIndex + 1}`;
+  document.getElementById('feedbackText').textContent = q.rationale;
+  document.getElementById('feedbackBox').style.display = 'block';
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function handleTimeout() {
+  answered = true;
+  const q = activeQuestions[currentIndex];
+  const buttons = document.querySelectorAll('.option-btn');
+  buttons.forEach(btn => btn.disabled = true);
+  const correctIdx = q.options.findIndex(o => o.isCorrect);
+  buttons[correctIdx].classList.add('correct');
+  
+  userResults.push({
+    q: q.title,
+    chosen: "អស់ពេល (Time Expired)",
+    correctText: q.options[correctIdx].text,
+    isCorrect: false,
+    why: q.rationale
+  });
+  
+  document.getElementById('feedbackText').innerHTML = '<strong style="color:#ef4444;">អស់ពេល ៦០ វិនាទី! (Time Expired)</strong><br>' + q.rationale;
+  document.getElementById('feedbackBox').style.display = 'block';
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function nextQuestion() {
+  currentIndex++;
+  if (currentIndex < activeQuestions.length) {
+    loadQuestion(currentIndex);
+  } else {
+    showFinalResults();
+  }
+}
+
+function updateProgress() {
+  const pct = ((currentIndex + 1) / activeQuestions.length) * 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+function showFinalResults() {
+  document.getElementById('quizCard').style.display = 'none';
+  document.getElementById('finalCard').style.display = 'block';
+  const pct = Math.round((score / activeQuestions.length) * 100);
+  document.getElementById('finalScoreVal').textContent = `${score} / ${activeQuestions.length} (${pct}%)`;
+  
+  let msg = '';
+  if (pct >= 80) msg = 'ល្អប្រសើរណាស់! អ្នកយល់ដឹងច្បាស់លាស់ពីការវិភាគទឹកនោម សរីរវិទ្យាតម្រងនោម និងសុវត្ថិភាពមន្ទីរពិសោធន៍។';
+  else if (pct >= 60) msg = 'លទ្ធផលល្អបង្គួរ! គួររំលឹកបន្ថែមលើរូបសាស្ត្រគ្រីស្តាល់ និងស៊ីឡាំង (Casts/Crystals), អ័រម៉ូន ADH/Aldosterone, និងលក្ខណៈវិនិច្ឆ័យបដិសេធសំណាក។';
+  else msg = 'ត្រូវរំលឹកមេរៀនឡើងវិញ ជាពិសេសការបែងចែកពណ៌/ពពុះទឹកនោម, វិធីសាស្ត្រស្រង់សំណាក និងការបកស្រាយកំហាប់ Specific Gravity។';
+  document.getElementById('finalFeedback').textContent = msg;
+
+  const reviewEl = document.getElementById('reviewContainer');
+  reviewEl.innerHTML = '<h3 style="margin-bottom:12px; color:var(--primary);">ពិនិត្យចម្លើយលម្អិត (Urinalysis Case Review):</h3>' + 
+    userResults.map((r, i) => `
+      <details class="review-item">
+        <summary>${i + 1}. ${r.isCorrect ? "✓ ត្រឹមត្រូវ" : "✗ ខុស"} — ${r.q.substring(0, 50)}...</summary>
+        <p><strong>សំណួរពេញលេញ៖</strong> ${r.q}</p>
+        <p><strong>ចម្លើយរបស់អ្នក៖</strong> <span style="color:${r.isCorrect ? '#86efac' : '#fca5a5'}">${r.chosen}</span></p>
+        <p><strong>ចម្លើយត្រឹមត្រូវ៖</strong> <span style="color:#86efac">${r.correctText}</span></p>
+        <p><strong>ការពន្យល់លម្អិត៖</strong> ${r.why}</p>
+      </details>
+    `).join('');
+}
+
+window.onload = initQuiz;
+</script>
+</body>
+</html>
